@@ -200,3 +200,4 @@ if __name__ == "__main__":
                 except Exception as e:
                     sg.popup("Erro, verificar o arquivo e entradas.")
                     print(f"Erro: {e}")
+
