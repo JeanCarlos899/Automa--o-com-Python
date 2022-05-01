@@ -49,12 +49,12 @@ class autoSisMoura:
         print()
 
     def finishing(self, hotkeyCloseSale, hotkeyFinalize):
-        # p.press(hotkeyCloseSale)
-        # time.sleep(3)
-        # p.click(x=69, y=233)
-        # time.sleep(3)
-        # p.press(hotkeyFinalize)
-        # time.sleep(3)
+        p.press(hotkeyCloseSale)
+        time.sleep(3)
+        p.click(x=69, y=233)
+        time.sleep(3)
+        p.press(hotkeyFinalize)
+        time.sleep(3)
         pass
 
     class runAplication:
@@ -161,7 +161,160 @@ class autoSisMoura:
                 print("==============================================================")
 
                 self.index += 1
+
+class autoSoftcom:
+    def __init__(self, path, TEMPO_ESPERA, valor_total, x, y):
+        time.sleep(5)
+
+        self.TEMPO_ESPERA = float(TEMPO_ESPERA)
+
+        self.valor_total = valor_total
+
+        self.path = path
+        self.value_atual = 0
+        self.contador = 0
+        self.x = x
+        self.y = y
+
+        if valor_total == 0:
+            raise ValueError('Valor total não pode ser 0')
+
+        self.QTD_RODAR = valor_total // 1000
+
+        while True:
+            if self.valor_total - self.value_atual >= 1000:
+                valor_venda = self.runAplication(self.path, self.TEMPO_ESPERA, x=self.x, y=self.y).run() 
+                if type(valor_venda) == int or type(valor_venda) == float:
+                    self.value_atual += valor_venda
+                    self.contador += 1
+                    self.finishing()
+                else:
+                    raise ValueError('O arquivo não tem mais estoque para vender')
+            else:
+                break
+        
+        value = valor_total - self.value_atual
+        self.value_atual += self.runAplication(self.path, self.TEMPO_ESPERA, x=self.x, y=self.y, value_personalizado=value).run()
+        self.finishing()
+        self.contador += 1
+
+        p.alert(f"FINALIZADO: R$ {self.value_atual:.2f}, VENDAS: {self.contador}")
+
+        print()
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(f"FINALIZADO: R$ {self.value_atual:.2f}, VENDAS: {self.contador}")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print()
+
+    def finishing(self):
+        sg.popup_ok(f"Finalize a venda e clique em OK", title="FINALIZADO", keep_on_top=False)
+        time.sleep(5)
+
+    class runAplication:
+
+        def __init__(self, path, TEMPO_ESPERA, x, y, value_personalizado = None):
+            # valueES DE EXECUÇÃO
+            self.index = 0
+            self.value_venda = 0
+            self.value_personalizado = value_personalizado
+
+            # CONFIGURAÇÕES
+            self.path = path
+            self.TEMPO_ESPERA = TEMPO_ESPERA
+            self.x = x
+            self.y = y
+
+            # INICIAR PLANILHA
+            self.planilha = load_workbook(self.path)
+            self.aba_ativa = self.planilha.active
+
+            # GERAR LISTA
+            self.estoque = self.gerar_lista("E")
+            self.codigos = self.gerar_lista("B")
+            self.precos = self.gerar_lista("F")
+
+        def gerar_lista(self, coluna) -> list:
+            lista = []
+            for celula in self.aba_ativa[coluna]:
+                values = celula.value
+                if values != None and values != "" and type(values) != str:
+                        lista.append(values)
+            return lista
+
+        def quantidade(self):
+            if self.estoque[self.index] <= 20:
+                return 0
+            elif self.estoque[self.index] > 20 and self.estoque[self.index] <= 50:
+                return random.randint(1, 5)
+            elif self.estoque[self.index] > 50 and self.estoque[self.index] <= 100:
+                return random.randint(5, 10)
+            elif self.estoque[self.index] > 100:
+                return random.randint(15, 20)
+            
+        def atualizar_estoque(self):
+            print("Atualizando o arquivo...")
+            for index in range(len(self.codigos)):
+                self.aba_ativa[f"E{index+2}"] = self.estoque[index]
+            self.planilha.save(self.path)  
+            print("Arquivo atualizado com sucesso!")
+
+        def run(self):
+
+            for produto in self.codigos:
+
+                qtd = self.quantidade()
+
+                if qtd == 0:
+                    print("Produto com estoque baixo.")
+                    self.index += 1
+                    continue
                 
+                if self.value_personalizado:
+                    if self.value_venda >= self.value_personalizado or self.value_venda + (qtd * self.precos[self.index]) > 1000:
+                        print('')                
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print('')
+                        print("==============================================================")
+                        p.alert(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
+
+                        self.atualizar_estoque()
+                        return self.value_venda
+
+                else: 
+                    if self.value_venda + (qtd * self.precos[self.index]) > 1000:
+                        print('')                
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print('')
+                        print("==============================================================")
+                        p.alert(f"Venda concluída, value total: R$ {self.value_venda:.2f}")
+
+                        self.atualizar_estoque()
+                        return self.value_venda
+                    
+                p.click(self.x, self.y) 
+                p.write(str(qtd))
+                time.sleep(self.TEMPO_ESPERA)
+                p.press('*')
+                time.sleep(self.TEMPO_ESPERA)
+                p.write(str(produto))
+                time.sleep(self.TEMPO_ESPERA)
+                p.press('enter')
+                
+                self.estoque[self.index] = self.estoque[self.index] - qtd
+  
+                print(f"{qtd} unidades do produto {produto} adicionadas ao carrinho.")
+
+                #ADICIONAR O PREÇO DO PRODUTO AO CONSOLE
+                self.value_venda = self.value_venda + self.precos[self.index] * qtd
+                print(f"value total: {self.value_venda:.2f}")
+                print("==============================================================")
+
+                self.index += 1  
+
 class windowAuto:
 
     def window(self):
@@ -235,10 +388,10 @@ if __name__ == "__main__":
                         sg.popup("Erro, verificar o arquivo, calibração e entradas.")
                         print(f"Erro: {e}")
                 else:
-                    # try:
-                    #     autoSoftcom(path=local_path, TEMPO_ESPERA=float(tempo), valor_total=float(valor))
-                    # except Exception as e:
-                    #     sg.popup("Erro, verificar o arquivo e entradas.")
-                    #     print(f"Erro: {e}")
+                    try:
+                        autoSoftcom(path=local_path, TEMPO_ESPERA=float(tempo), valor_total=float(valor), x=x, y=y)
+                    except Exception as e:
+                        sg.popup("Erro, verificar o arquivo e entradas.")
+                        print(f"Erro: {e}")
                     pass
 
