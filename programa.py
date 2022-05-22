@@ -5,7 +5,7 @@ import random
 import PySimpleGUI as sg
 
 class autoSisMoura:
-    def __init__(self, path, TEMPO_ESPERA, valor_total, x, y):
+    def __init__(self, path, TEMPO_ESPERA, valor_total, x_pdv, y_pdv, x_venda, y_venda):
         time.sleep(5)
 
         self.TEMPO_ESPERA = float(TEMPO_ESPERA)
@@ -15,8 +15,10 @@ class autoSisMoura:
         self.path = path
         self.value_atual = 0
         self.contador = 0
-        self.x = x
-        self.y = y
+        self.x_pdv = x_pdv
+        self.y_pdv = y_pdv
+        self.x_venda = x_venda
+        self.y_venda = y_venda
 
         if valor_total == 0:
             raise ValueError('Valor total não pode ser 0')
@@ -25,7 +27,7 @@ class autoSisMoura:
 
         while True:
             if self.valor_total - self.value_atual >= 1000:
-                valor_venda = self.runAplication(self.path, self.TEMPO_ESPERA, x=self.x, y=self.y).run() 
+                valor_venda = self.runAplication(self.path, self.TEMPO_ESPERA, self.x_pdv, self.y_pdv).run() 
                 if type(valor_venda) == int or type(valor_venda) == float:
                     self.value_atual += valor_venda
                     self.contador += 1
@@ -36,16 +38,16 @@ class autoSisMoura:
                 break
         
         value = valor_total - self.value_atual
-        self.value_atual += self.runAplication(self.path, self.TEMPO_ESPERA, x=self.x, y=self.y, value_personalizado=value).run()
+        self.value_atual += self.runAplication(self.path, self.TEMPO_ESPERA, self.x_pdv, self.y_pdv, value_personalizado=value).run()
         self.finishing(hotkeyCloseSale = 'f5', hotkeyFinalize = 'f5')
         self.contador += 1
 
         p.alert(f"FINALIZADO: R$ {self.value_atual:.2f}, VENDAS: {self.contador}")
 
         print()
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(f"FINALIZADO: R$ {self.value_atual:.2f}, VENDAS: {self.contador}")
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print()
 
     def finishing(self, hotkeyCloseSale, hotkeyFinalize):
@@ -55,11 +57,10 @@ class autoSisMoura:
         time.sleep(3)
         p.press(hotkeyFinalize)
         time.sleep(3)
-        pass
 
     class runAplication:
 
-        def __init__(self, path, TEMPO_ESPERA, x, y, value_personalizado = None):
+        def __init__(self, path, TEMPO_ESPERA, x_pdv, y_pdv, value_personalizado = None):
             # valueES DE EXECUÇÃO
             self.index = 0
             self.value_venda = 0
@@ -68,8 +69,8 @@ class autoSisMoura:
             # CONFIGURAÇÕES
             self.path = path
             self.TEMPO_ESPERA = TEMPO_ESPERA
-            self.x = x
-            self.y = y
+            self.x_pdv = x_pdv
+            self.y_pdv = y_pdv
 
             # INICIAR PLANILHA
             self.planilha = load_workbook(self.path)
@@ -119,11 +120,11 @@ class autoSisMoura:
                 if self.value_personalizado:
                     if self.value_venda >= self.value_personalizado or self.value_venda + (qtd * self.precos[self.index]) > 1000:
                         print('')                
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print('')
-                        print("==============================================================")
+                        print("========================================================")
                         p.alert(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
 
                         self.atualizar_estoque()
@@ -132,17 +133,17 @@ class autoSisMoura:
                 else: 
                     if self.value_venda + (qtd * self.precos[self.index]) > 1000:
                         print('')                
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print('')
-                        print("==============================================================")
+                        print("========================================================")
                         p.alert(f"Venda concluída, value total: R$ {self.value_venda:.2f}")
 
                         self.atualizar_estoque()
                         return self.value_venda
                     
-                p.click(self.x, self.y) 
+                p.click(self.x_pdv, self.y_pdv) 
                 p.write(str(qtd))
                 time.sleep(self.TEMPO_ESPERA)
                 p.press('*')
@@ -158,7 +159,7 @@ class autoSisMoura:
                 #ADICIONAR O PREÇO DO PRODUTO AO CONSOLE
                 self.value_venda = self.value_venda + self.precos[self.index] * qtd
                 print(f"value total: {self.value_venda:.2f}")
-                print("==============================================================")
+                print("========================================================")
 
                 self.index += 1
 
@@ -201,9 +202,9 @@ class autoSoftcom:
         p.alert(f"FINALIZADO: R$ {self.value_atual:.2f}, VENDAS: {self.contador}")
 
         print()
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(f"FINALIZADO: R$ {self.value_atual:.2f}, VENDAS: {self.contador}")
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print()
 
     def finishing(self):
@@ -272,11 +273,11 @@ class autoSoftcom:
                 if self.value_personalizado:
                     if self.value_venda >= self.value_personalizado or self.value_venda + (qtd * self.precos[self.index]) > 1000:
                         print('')                
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print('')
-                        print("==============================================================")
+                        print("========================================================")
                         p.alert(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
 
                         self.atualizar_estoque()
@@ -285,11 +286,11 @@ class autoSoftcom:
                 else: 
                     if self.value_venda + (qtd * self.precos[self.index]) > 1000:
                         print('')                
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print(f"Venda concluída, valor total: R$ {self.value_venda:.2f}")
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                         print('')
-                        print("==============================================================")
+                        print("========================================================")
                         p.alert(f"Venda concluída, value total: R$ {self.value_venda:.2f}")
 
                         self.atualizar_estoque()
@@ -311,7 +312,7 @@ class autoSoftcom:
                 #ADICIONAR O PREÇO DO PRODUTO AO CONSOLE
                 self.value_venda = self.value_venda + self.precos[self.index] * qtd
                 print(f"value total: {self.value_venda:.2f}")
-                print("==============================================================")
+                print("=========================================================")
 
                 self.index += 1  
 
@@ -338,8 +339,12 @@ class windowAuto:
             [sg.Text("Tempo de espera:", size=(1920, 1))],
             [sg.InputText(key="-TIME-", size=(1920, 1), default_text="0")],
             [sg.Button("Iniciar", size=(1920, 2), button_color=("White", "#027F9E"), border_width=0)],
-            [sg.Button("Calibrar clique do mouse", size=(1920, 2), button_color=("White", "#027F9E"), border_width=0, key="-MOUSE-")],
-
+            [sg.Frame("Calibrar mouse", 
+                [
+                    [sg.Button("Clique do PDV", size=(30, 2), button_color=("White", "#027F9E"), border_width=0, key="-MOUSE_PDV-")],
+                    [sg.Button("Clique da venda", size=(30, 2), button_color=("White", "#027F9E"), border_width=0, key="-MOUSE_VENDA-")]
+                ]
+            )],
             [sg.Text(500*"_", text_color="#FF8C01")],
             [sg.Text("", font=(None, 1))],
             [sg.Output(size=(200, 15), font=("Courier", 10), key="-OUTPUT-")],
@@ -348,7 +353,7 @@ class windowAuto:
 
         ]
         
-        return sg.Window("AutoSisMoura", layout=layout, finalize=True, size=(600, 780), resizable=True)
+        return sg.Window("Automação de sistemas", layout=layout, finalize=True, size=(600, 780), resizable=True, keep_on_top=True)
 
 
 if __name__ == "__main__":
@@ -362,10 +367,17 @@ if __name__ == "__main__":
         if event == sg.WIN_CLOSED:
             break
 
-        elif event == '-MOUSE-':
+        elif event == '-MOUSE_PDV-':
             print("Mova o mouse para a posição desejada em 5 segundos.")
             time.sleep(5)
-            x, y = p.position()
+            x_pdv, y_pdv = p.position()
+            print("Posição do mouse:", p.position())
+            print("Calibração concluída.")
+        
+        elif event == '-MOUSE_VENDA-':
+            print("Mova o mouse para a posição desejada em 5 segundos.")
+            time.sleep(5)
+            x_venda, y_venda = p.position()
             print("Posição do mouse:", p.position())
             print("Calibração concluída.")
 
@@ -383,13 +395,21 @@ if __name__ == "__main__":
             else:
                 if sismoura == True:
                     try:
-                        autoSisMoura(path=local_path, TEMPO_ESPERA=float(tempo), valor_total=float(valor), x=x, y=y)
+                        autoSisMoura(
+                            path=local_path, 
+                            TEMPO_ESPERA=float(tempo), 
+                            valor_total=float(valor), 
+                            x_pdv=x_pdv, 
+                            y_pdv=y_pdv, 
+                            x_venda=x_venda, 
+                            y_venda=y_venda
+                            )
                     except Exception as e:
                         sg.popup("Erro, verificar o arquivo, calibração e entradas.")
                         print(f"Erro: {e}")
                 else:
                     try:
-                        autoSoftcom(path=local_path, TEMPO_ESPERA=float(tempo), valor_total=float(valor), x=x, y=y)
+                        autoSoftcom(path=local_path, TEMPO_ESPERA=float(tempo), valor_total=float(valor), x=x_pdv, y=y_pdv)
                     except Exception as e:
                         sg.popup("Erro, verificar o arquivo e entradas.")
                         print(f"Erro: {e}")
